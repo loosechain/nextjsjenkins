@@ -96,36 +96,53 @@ pipeline {
                 echo 'Deploying application locally...'
                 script {
                     def isUnix = isUnix()
+                    def deployPath = isUnix ? "${WORKSPACE}/deploy" : "${WORKSPACE}\\deploy"
                     
                     if (isUnix) {
                         // Unix/Linux/Mac deployment
-                        sh '''
-                            mkdir -p ${DEPLOY_DIR}
-                            echo "Deployment directory: ${DEPLOY_DIR}"
+                        sh """
+                            mkdir -p ${deployPath}
+                            echo "Deployment directory: ${deployPath}"
                             
                             # Copy built application
-                            cp -r .next ${DEPLOY_DIR}/
-                            cp -r public ${DEPLOY_DIR}/
-                            cp package*.json ${DEPLOY_DIR}/
-                            cp next.config.js ${DEPLOY_DIR}/
-                            cp -r node_modules ${DEPLOY_DIR}/
-                        '''
+                            cp -r .next ${deployPath}/
+                            cp -r public ${deployPath}/
+                            cp package*.json ${deployPath}/
+                            cp next.config.js ${deployPath}/
+                            cp -r node_modules ${deployPath}/
+                        """
                     } else {
                         // Windows deployment
-                        bat '''
-                            if not exist "${DEPLOY_DIR}" mkdir "${DEPLOY_DIR}"
-                            echo Deployment directory: ${DEPLOY_DIR}
+                        bat """
+                            if not exist "${deployPath}" mkdir "${deployPath}"
+                            echo Deployment directory: ${deployPath}
                             
-                            xcopy /E /I /Y .next "${DEPLOY_DIR}\\.next"
-                            xcopy /E /I /Y public "${DEPLOY_DIR}\\public"
-                            copy /Y package*.json "${DEPLOY_DIR}\\"
-                            copy /Y next.config.js "${DEPLOY_DIR}\\"
-                            xcopy /E /I /Y node_modules "${DEPLOY_DIR}\\node_modules"
-                        '''
+                            if exist .next (
+                                xcopy /E /I /Y .next "${deployPath}\\.next"
+                            ) else (
+                                echo WARNING: .next directory not found - build may have failed
+                            )
+                            
+                            if exist public (
+                                xcopy /E /I /Y public "${deployPath}\\public"
+                            )
+                            
+                            copy /Y package*.json "${deployPath}\\"
+                            copy /Y next.config.js "${deployPath}\\"
+                            xcopy /E /I /Y node_modules "${deployPath}\\node_modules"
+                            
+                            echo Verifying deployment...
+                            if exist "${deployPath}\\node_modules" (
+                                echo Deployment successful
+                            ) else (
+                                echo ERROR: Deployment failed
+                                exit /b 1
+                            )
+                        """
                     }
                     
-                    echo "✅ Application deployed to: ${DEPLOY_DIR}"
-                    echo "To start the application, run: cd ${DEPLOY_DIR} && npm start"
+                    echo "✅ Application deployed to: ${deployPath}"
+                    echo "To start the application, run: cd ${deployPath} && npm start"
                 }
             }
         }
