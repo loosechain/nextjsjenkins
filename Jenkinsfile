@@ -30,25 +30,18 @@ pipeline {
                             npm ci
                         '''
                     } else {
-                        bat '''
-                            echo Checking Node.js installation...
-                            node --version
-                            npm --version
-                            echo Current directory:
-                            cd
-                            echo Listing files:
-                            dir /b
-                            echo Installing dependencies...
-                            npm install
-                            echo Verifying installation...
-                            if exist node_modules (
-                                echo node_modules directory exists
-                            ) else (
-                                echo ERROR: node_modules not found
-                                exit /b 1
-                            )
-                            echo Dependencies installed successfully
-                        '''
+                        bat 'echo Checking Node.js installation...'
+                        bat 'node --version'
+                        bat 'npm --version'
+                        bat 'echo Current directory:'
+                        bat 'cd'
+                        bat 'echo Listing files:'
+                        bat 'dir /b'
+                        bat 'echo Installing dependencies...'
+                        bat 'npm install'
+                        bat 'echo Verifying installation...'
+                        bat 'if exist node_modules (echo node_modules exists) else (echo ERROR: node_modules not found && exit /b 1)'
+                        bat 'echo Dependencies installed successfully'
                     }
                 }
             }
