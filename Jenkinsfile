@@ -31,7 +31,6 @@ pipeline {
                         '''
                     } else {
                         bat '''
-                            @echo off
                             echo Checking Node.js installation...
                             node --version
                             npm --version
@@ -46,31 +45,29 @@ pipeline {
                             if exist package-lock.json (
                                 echo Found package-lock.json, running npm ci...
                                 npm ci
-                                if errorlevel 1 (
-                                    echo npm ci failed with error code %errorlevel%
-                                    echo Trying npm install instead...
+                                if %errorlevel% neq 0 (
+                                    echo npm ci failed, trying npm install...
                                     npm install
                                 )
                             ) else (
                                 echo package-lock.json not found, running npm install...
                                 npm install
                             )
-                            if errorlevel 1 (
-                                echo ERROR: Failed to install dependencies, error code %errorlevel%
+                            if %errorlevel% neq 0 (
+                                echo ERROR: Failed to install dependencies
                                 exit /b 1
                             )
                             echo.
                             echo Verifying installation...
                             if exist node_modules (
                                 echo node_modules directory exists
-                                dir node_modules 2>nul | find /c /v ""
                             ) else (
                                 echo ERROR: node_modules not found after installation
                                 exit /b 1
                             )
                             echo.
                             echo Checking if next is installed...
-                            if exist node_modules\next (
+                            if exist node_modules\\next (
                                 echo next package found in node_modules
                             ) else (
                                 echo WARNING: next package not found
