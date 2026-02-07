@@ -55,7 +55,16 @@ pipeline {
                     if (isUnix) {
                         sh 'npm run lint || true'
                     } else {
-                        bat 'npm run lint || echo Lint completed'
+                        // Create ESLint config if it doesn't exist to avoid interactive prompt
+                        bat '''
+                            if not exist .eslintrc.json (
+                                echo Creating ESLint config...
+                                echo { > .eslintrc.json
+                                echo   "extends": "next/core-web-vitals" >> .eslintrc.json
+                                echo } >> .eslintrc.json
+                            )
+                            npm run lint || echo Lint completed with warnings
+                        '''
                     }
                 }
             }
