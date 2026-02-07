@@ -18,25 +18,53 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Node.js dependencies...'
-                sh '''
-                    node --version
-                    npm --version
-                    npm ci
-                '''
+                script {
+                    def isUnix = isUnix()
+                    
+                    if (isUnix) {
+                        sh '''
+                            echo "Checking Node.js installation..."
+                            node --version || echo "Node.js not found in PATH"
+                            npm --version || echo "npm not found in PATH"
+                            npm ci
+                        '''
+                    } else {
+                        bat '''
+                            echo Checking Node.js installation...
+                            node --version || echo Node.js not found in PATH
+                            npm --version || echo npm not found in PATH
+                            npm ci
+                        '''
+                    }
+                }
             }
         }
 
         stage('Lint') {
             steps {
                 echo 'Running linter...'
-                sh 'npm run lint || true'
+                script {
+                    def isUnix = isUnix()
+                    if (isUnix) {
+                        sh 'npm run lint || true'
+                    } else {
+                        bat 'npm run lint || echo Lint completed'
+                    }
+                }
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Building Next.js application...'
-                sh 'npm run build'
+                script {
+                    def isUnix = isUnix()
+                    if (isUnix) {
+                        sh 'npm run build'
+                    } else {
+                        bat 'npm run build'
+                    }
+                }
             }
         }
 
