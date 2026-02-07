@@ -135,31 +135,32 @@ pipeline {
                 script {
                     echo 'Starting the application...'
                     def isUnix = isUnix()
+                    def deployPath = "${WORKSPACE}/deploy"
                     
                     if (isUnix) {
                         // Unix/Linux/Mac - stop existing and start new
-                        sh '''
+                        sh """
                             pkill -f "node.*server.js" || echo "No existing process found"
-                            cd ${DEPLOY_DIR}
+                            cd ${deployPath}
                             nohup npm start > app.log 2>&1 &
-                            echo $! > app.pid
+                            echo \$! > app.pid
                             sleep 3
-                            echo "Application started with PID: $(cat app.pid)"
-                        '''
+                            echo "Application started with PID: \$(cat app.pid)"
+                        """
                     } else {
                         // Windows - stop existing and start new
-                        bat '''
+                        bat """
                             taskkill /F /IM node.exe 2>nul || echo No existing process found
-                            cd /d "${DEPLOY_DIR}"
+                            cd /d "${deployPath}"
                             start /B npm start > app.log 2>&1
-                            timeout /t 3 /nobreak >nul
+                            timeout /t 3 /nobreak
                             echo Application started. Check app.log for output.
-                        '''
+                        """
                     }
                     
                     echo "🚀 Application should be running at http://localhost:3000"
-                    echo "Check ${DEPLOY_DIR}/app.log for application logs"
-                    echo "Note: If the app doesn't start, you can manually run: cd ${DEPLOY_DIR} && npm start"
+                    echo "Check ${deployPath}/app.log for application logs"
+                    echo "Note: If the app doesn't start, you can manually run: cd ${deployPath} && npm start"
                 }
             }
         }
