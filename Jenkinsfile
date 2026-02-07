@@ -34,43 +34,18 @@ pipeline {
                             echo Checking Node.js installation...
                             node --version
                             npm --version
-                            echo.
                             echo Current directory:
                             cd
-                            echo.
                             echo Listing files:
                             dir /b
-                            echo.
                             echo Installing dependencies...
-                            if exist package-lock.json (
-                                echo Found package-lock.json, running npm ci...
-                                npm ci
-                                if %errorlevel% neq 0 (
-                                    echo npm ci failed, trying npm install...
-                                    npm install
-                                )
-                            ) else (
-                                echo package-lock.json not found, running npm install...
-                                npm install
-                            )
-                            if %errorlevel% neq 0 (
-                                echo ERROR: Failed to install dependencies
-                                exit /b 1
-                            )
-                            echo.
+                            npm install
                             echo Verifying installation...
                             if exist node_modules (
                                 echo node_modules directory exists
                             ) else (
-                                echo ERROR: node_modules not found after installation
+                                echo ERROR: node_modules not found
                                 exit /b 1
-                            )
-                            echo.
-                            echo Checking if next is installed...
-                            if exist node_modules\\next (
-                                echo next package found in node_modules
-                            ) else (
-                                echo WARNING: next package not found
                             )
                             echo Dependencies installed successfully
                         '''
