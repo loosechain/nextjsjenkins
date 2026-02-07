@@ -31,34 +31,49 @@ pipeline {
                         '''
                     } else {
                         bat '''
+                            @echo off
                             echo Checking Node.js installation...
                             node --version
                             npm --version
                             echo.
+                            echo Current directory:
+                            cd
+                            echo.
+                            echo Listing files:
+                            dir /b
+                            echo.
                             echo Installing dependencies...
                             if exist package-lock.json (
                                 echo Found package-lock.json, running npm ci...
-                                call npm ci
+                                npm ci
                                 if errorlevel 1 (
-                                    echo npm ci failed, trying npm install...
-                                    call npm install
+                                    echo npm ci failed with error code %errorlevel%
+                                    echo Trying npm install instead...
+                                    npm install
                                 )
                             ) else (
                                 echo package-lock.json not found, running npm install...
-                                call npm install
+                                npm install
                             )
                             if errorlevel 1 (
-                                echo ERROR: Failed to install dependencies
+                                echo ERROR: Failed to install dependencies, error code %errorlevel%
                                 exit /b 1
                             )
                             echo.
                             echo Verifying installation...
                             if exist node_modules (
                                 echo node_modules directory exists
-                                dir node_modules | find /c /v ""
+                                dir node_modules 2>nul | find /c /v ""
                             ) else (
                                 echo ERROR: node_modules not found after installation
                                 exit /b 1
+                            )
+                            echo.
+                            echo Checking if next is installed...
+                            if exist node_modules\next (
+                                echo next package found in node_modules
+                            ) else (
+                                echo WARNING: next package not found
                             )
                             echo Dependencies installed successfully
                         '''
