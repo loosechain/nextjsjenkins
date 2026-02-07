@@ -24,16 +24,43 @@ pipeline {
                     if (isUnix) {
                         sh '''
                             echo "Checking Node.js installation..."
-                            node --version || echo "Node.js not found in PATH"
-                            npm --version || echo "npm not found in PATH"
+                            node --version
+                            npm --version
+                            echo "Installing dependencies..."
                             npm ci
                         '''
                     } else {
                         bat '''
                             echo Checking Node.js installation...
-                            node --version || echo Node.js not found in PATH
-                            npm --version || echo npm not found in PATH
-                            npm ci
+                            node --version
+                            npm --version
+                            echo.
+                            echo Installing dependencies...
+                            if exist package-lock.json (
+                                echo Found package-lock.json, running npm ci...
+                                call npm ci
+                                if errorlevel 1 (
+                                    echo npm ci failed, trying npm install...
+                                    call npm install
+                                )
+                            ) else (
+                                echo package-lock.json not found, running npm install...
+                                call npm install
+                            )
+                            if errorlevel 1 (
+                                echo ERROR: Failed to install dependencies
+                                exit /b 1
+                            )
+                            echo.
+                            echo Verifying installation...
+                            if exist node_modules (
+                                echo node_modules directory exists
+                                dir node_modules | find /c /v ""
+                            ) else (
+                                echo ERROR: node_modules not found after installation
+                                exit /b 1
+                            )
+                            echo Dependencies installed successfully
                         '''
                     }
                 }
